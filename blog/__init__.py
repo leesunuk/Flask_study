@@ -15,7 +15,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
     
-    app.register_blueprint(views, url_prefix="/blog")
+    app.register_blueprint(views, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/auth")
     
     create_database(app)
@@ -26,7 +26,7 @@ def create_app():
     
     @login_manager.user_loader
     def load_user_by_id(id):
-        return get_user_model.query.get(int(id))
+        return get_user_model().query.get(int(id))
     
     return app
 
