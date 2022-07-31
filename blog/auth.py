@@ -36,6 +36,7 @@ def logout():
 def signup():
     form = SignupForm()
     if request.method == "POST" and form.validate_on_submit():
+        print("검증 성공")
         signup_user = get_user_model()(
             email = form.email.data,
             username = form.username.data,
