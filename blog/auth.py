@@ -2,6 +2,7 @@ from flask import Blueprint, flash, render_template, redirect, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import redirect
 from .forms import LoginForm, SignupForm
 from .models import User, get_user_model
 
@@ -36,7 +37,6 @@ def logout():
 def signup():
     form = SignupForm()
     if request.method == "POST" and form.validate_on_submit():
-        print("검증 성공")
         signup_user = get_user_model()(
             email = form.email.data,
             username = form.username.data,

@@ -20,6 +20,10 @@ def categories_list():
 def post_list():
     return render_template("post.html", user=current_user)
 
+@views.route("/create-post")
+def post_create():
+    return render_template("create-post.html", user=current_user)
+
 @views.route('posts/<int:id>')
 def post_detail():
     return render_template("post_detail.html", user=current_user)
