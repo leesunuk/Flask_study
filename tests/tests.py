@@ -114,6 +114,7 @@ class TestPostwithCategory(unittest.TestCase):
     def tearDown(self):
         os.unlink('tests/test.db')
         self.ctx.pop()
+        db.session.close()
         
     def test_add_category_and_post(self):
         self.python_category = get_category_model()(
@@ -130,3 +131,52 @@ class TestPostwithCategory(unittest.TestCase):
         db.session.add(self.rust_category)
         db.session.commit()
         self.assertEqual(get_category_model().query.filter_by(id=2).first().name, "rust")
+        
+        self.javascript_category = get_category_model()(
+            name = "javascript"
+        )
+        db.session.add(self.javascript_category)
+        db.session.commit()
+        
+        response = self.client.get('/categories-list')
+        soup = BeautifulSoup(response.data, 'html.parser')
+        self.assertIn('python', soup.text)
+        self.assertIn('rust', soup.text)
+        self.assertIn('javascript', soup.text)
+        
+        response = self.client.get('/create-post', follow_redirects=False)
+        self.assertEqual(302, response.status_code)
+        
+        response = self.client.post('/auth/sign-up',
+                                    data=dict(email="exEmail@test.com", username="test", password1="test1234", password2="test1234"))
+        with self.client:
+            response = self.client.post('/auth/login',
+                                    data=dict(email="exEmail@test.com", username="test", password="test1234"), follow_redirects=True)
+            response= self.client.get('/create-post')
+            self.assertEqual(response.status_code, 200)
+            
+            soup = BeautifulSoup(response.data, 'html.parser')
+            select_tags = soup.find(id='category')
+            self.assertIn("python", select_tags.text)
+            self.assertIn("rust", select_tags.text)
+            self.assertIn("javascript", select_tags.text)
+            
+            response_post = self.client.post('/create-post',
+                                             data=dict(title="안녕",
+                                                       content="반가워",
+                                                       category="1"),
+                                             follow_redirects=True)
+            self.assertEqual(1,get_post_model().query.count())
+            
+            response = self.client.get(f'/posts/1')
+            soup = BeautifulSoup(response.data, 'html.parser')
+            
+            title_wrapper = soup.find(id='title-wrapper')
+            self.assertIn("안녕", title_wrapper.text)
+            
+            author_wrapper = soup.find(id='author-wrapper')
+            self.assertIn("hi", author_wrapper.text)
+        db.session.close()
+if __name__ == "__main__":
+    unittest.main()
+    db.session.close()
