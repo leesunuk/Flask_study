@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, abort, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from blog.forms import PostForm
@@ -29,24 +29,44 @@ def post_list():
 @views.route("/create-post", methods=['GET', 'POST'])
 @login_required
 def post_create():
-    form = PostForm()
-    if request.method == "POST" and form.validate_on_submit():
-        post = get_post_model()(
-            title=form.title.data,
-            content=form.content.data,
-            category_id=form.category.data,
-            author_id=current_user.id,
-        )
-        db.session.add(post)
-        db.session.commit()
-        return redirect(url_for("views.home"))
+    if current_user.is_staff == True:
+        form = PostForm()
+        if request.method == "POST" and form.validate_on_submit():
+            post = get_post_model()(
+                title=form.title.data,
+                content=form.content.data,
+                category_id=form.category.data,
+                author_id=current_user.id,
+            )
+            db.session.add(post)
+            db.session.commit()
+            return redirect(url_for("views.home"))
+        else:
+            categories = get_category_model().query.all()
+            return render_template("create-post.html", user=current_user, categories=categories, form=form)
     else:
-        categories = get_category_model().query.all()
-        return render_template("create-post.html", user=current_user, categories=categories)
+        return abort(403)
+    
 
+@views.route('/edit-post/<int:id>', methods=["GET", "POST"])
+@login_required
+def edit_post(id):
+    post = get_post_model().query.filter_by(id=id).first()
+    form = PostForm()
+    categories = get_category_model().query.all()
+    
+    if current_user.is_staff == True and current_user.username == post.user.username:
+        if request.method == "GET":
+            return render_template("post_edit_form.html",user=current_user, post=post, categories=categories)
+        elif request.method == "POST" and form.validate_on_submit():
+            pass
+    else:
+        abort(403)
+        
 @views.route('/posts/<int:id>')
-def post_detail():
-    return render_template("post_detail.html", user=current_user)
+def post_detail(id):
+    post = get_post_model().query.filter_by(id=id).first()
+    return render_template("post_detail.html", user=current_user, post=post)
 
 @views.route("/contact")
 def contact():

@@ -1,7 +1,7 @@
 from flask import Flask
 from .views import views
 from .auth import auth
-from .models import DB_NAME, db, get_user_model
+from .models import DB_NAME, db, get_user_model, get_post_model, get_category_model
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
@@ -22,6 +22,9 @@ def create_app():
                   template_mode='bootstrap3')
     
     admin.add_view(ModelView(get_user_model(), db.session))
+    admin.add_view(ModelView(get_post_model(), db.session))
+    admin.add_view(ModelView(get_category_model(), db.session))
+    
     db.init_app(app)
     
     app.register_blueprint(views, url_prefix="/")

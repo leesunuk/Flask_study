@@ -180,3 +180,84 @@ class TestPostwithCategory(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
     db.session.close()
+    
+    def test_update_post(self):
+        
+        self.smith = get_user_model()(
+            email = "smith@test.com",
+            username = "smith",
+            password = "1234",
+            is_staff = True,
+        )
+        db.session.add(self.smith)
+        db.session.commit()
+        
+        self.james = get_user_model()(
+            email = "james@test.com",
+            username = "james",
+            password = "1234",
+            is_staff = True,
+        )
+        db.session.add(self.james)
+        db.session.commit()
+        
+        self.python_category = get_category_model()(
+            name = "python"
+        )
+        db.session.add(self.python_category)
+        db.session.commit()
+        self.javascript_category = get_category_model()(
+            name = "javascript"
+        )
+        db.session.add(self.javascript_category)
+        db.session.commit()
+        
+        from flask_login import FlaskLoginClient
+        app.test_cilent_class = FlaskLoginClient
+        
+        with app.test_client(user=self.smith) as smith:
+            smith.post('/create-post',
+                       data=dict(title="안녕, 나는 smith",
+                                 content = "만나서 반가워!",
+                                 category="1"), fllow_redirects=True)
+            response = smith.get('/posts/1')
+            soup = BeautifulSoup(response.data, 'html.parser')
+            edit_button = soup.find(id='edit-button')
+            self.assertIn('Edit', edit_button.text)
+            
+            response = smith.get('/edit-post/1')
+            self.assertEqual(200, response.status_code)
+            soup = BeautifulSoup(response.data, 'html.parser')
+            
+            title_input = soup.find('input')
+            content_input = soup.find('textarea')
+            
+            self.assertIn(title_input.text, "안녕! smith야")
+            self.assertIn(content_input.text, "만나서 반가워")
+            
+            smith.post('/edit-post/1',
+                       data=dict(title="안녕! smith가 수정해볼게",
+                                 content="수정이 잘 됐으면 좋겠어요",
+                                 category="2"), follow_redirects=True)
+            
+            response = smith.get('/posts/1')
+            soup = BeautifulSoup(response.data, 'html.parser')
+            title_wrapper = soup.find(id='title-wrapper')
+            content_wrapper = soup.find(id='content-wrapper')
+            
+            self.assertIn(title_input.text, "안녕 smith 글 수정할게")
+            self.assertIn(content_input.text, "수정이 잘 됐으면 좋겠어요")
+            
+            response = smith.get('/posts/1')
+            soup = BeautifulSoup(response.data, 'html.parser')
+            edit_button = soup.find(id='edit-button')
+            self.assertIn('Edit', edit_button.text)
+            smith.get('/auth/logout')
+            
+        with app.test_client(user=self.james) as james:
+            response = james.get('/posts/1')
+            self.asserEqual(response.status_code, 200)
+            soup = BeautifulSoup(response.data, 'html.parser')
+            self.assertNotIn('Edit', soup.text)
+            response = james.get('/edit-post/1')
+            self.assertEqual(response.status_code, 403)
