@@ -54,7 +54,7 @@ def post_create():
 @views.route('/edit-post/<int:id>', methods=["GET", "POST"])
 @login_required
 def edit_post(id):
-    post = get_post_model().query.filter_by(id=id).first()
+    post = db.session.query(get_post_model()).filter_by(id=id).first()
     form = PostForm()
     categories = get_category_model().query.all()
     
