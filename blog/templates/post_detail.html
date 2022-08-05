@@ -15,6 +15,11 @@ block header %}
               <p>Posted by : <a href="#!">{{ post.author_id }}</p>
             </div>
             <p>created_at : {{ post.create_at }}</p>
+            {% if post.user.username == current_user.username %}
+            <button class="btn btn-info" id="edit-button">
+              <a href="{{url_for("views.edit_post", id=post.id) }}">Edit</a>              
+            </button>
+            {%endif%}
           </span>
         </div>
       </div>

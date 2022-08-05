@@ -1,0 +1,98 @@
+{% extends 'base.html' %} {% block title %}Post List{% endblock %} {% block
+header %}
+<!-- Page Header-->
+<header
+  class="masthead"
+  style="background-image: url('{{ url_for('static', filename='assets/img/home-bg.jpg') }}')"
+>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>Categoty : {{current_category.name}}</h1>
+          <span class="subheading"
+            >{{post.count()}} 개의 포스트가 있습니다.</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %} {% block content %}
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+  <div class="row gx-4 gx-lg-5 justify-content-center">
+    <div class="col-md-10 col-lg-8 col-xl-10">
+      <!-- Post preview-->
+      {%for post in post%}
+      <div class="post-preview">
+        <a href="{{url_for('views.post_detail', id=post.id)}}">
+          <h6 class="post-title">{{post.title}}</h6>
+        </a>
+        <p class="post-meta">
+          Posted by
+          <a href="#">{{post.user.username}}</a>
+          {{post.create_at}}
+        </p>
+      </div>
+      {%endfor%}
+      <!-- Divider-->
+      <hr class="my-4" />
+      <!-- Post preview-->
+      <div class="post-preview">
+        <a href="post_detail.html"
+          ><h6 class="post-title">
+            I believe every human has a finite number of heartbeats. I don't
+            intend to waste any of mine.
+          </h6></a
+        >
+        <p class="post-meta">
+          Posted by
+          <a href="#!">Start Bootstrap</a>
+          on September 18, 2022
+        </p>
+      </div>
+      <!-- Divider-->
+      <hr class="my-4" />
+      <!-- Post preview-->
+      <div class="post-preview">
+        <a href="post_detail.html">
+          <h6 class="post-title">Science has not yet mastered prophecy</h6>
+          <h3 class="post-subtitle">
+            We predict too much for the next year and yet far too little for the
+            next ten.
+          </h3>
+        </a>
+        <p class="post-meta">
+          Posted by
+          <a href="#!">Start Bootstrap</a>
+          on August 24, 2022
+        </p>
+      </div>
+      <!-- Divider-->
+      <hr class="my-4" />
+      <!-- Post preview-->
+      <div class="post-preview">
+        <a href="post_detail.html">
+          <h6 class="post-title">Failure is not an option</h6>
+          <h3 class="post-subtitle">
+            Many say exploration is part of our destiny, but it’s actually our
+            duty to future generations.
+          </h3>
+        </a>
+        <p class="post-meta">
+          Posted by
+          <a href="#!">Start Bootstrap</a>
+          on July 8, 2022
+        </p>
+      </div>
+      <!-- Divider-->
+      <hr class="my-4" />
+      <!-- Pager-->
+      <div class="d-flex justify-content-end mb-4">
+        <a class="btn btn-primary text-uppercase" href="#!">Older Posts →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
